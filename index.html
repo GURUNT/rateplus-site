@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fuel Price Board</title>
+<style>
+  :root {
+    --asphalt: #1a1d1f;
+    --panel: #232729;
+    --steel: #3a4044;
+    --led-amber: #ffb347;
+    --led-green: #7ee787;
+    --led-red: #ff6b6b;
+    --paper: #f4f1ea;
+    --muted: #8b9196;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--asphalt);
+    background-image:
+      repeating-linear-gradient(0deg, rgba(255,255,255,0.015) 0px, rgba(255,255,255,0.015) 1px, transparent 1px, transparent 3px);
+    color: var(--paper);
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px 16px 60px;
+  }
+
+  .rig {
+    width: 100%;
+    max-width: 420px;
+  }
+
+  .frame-top {
+    background: var(--steel);
+    border-radius: 14px 14px 4px 4px;
+    padding: 3px;
+  }
+
+  header {
+    text-align: center;
+    padding: 18px 12px 14px;
+  }
+
+  .eyebrow {
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+
+  h1 {
+    font-family: 'Arial Black', Arial, sans-serif;
+    font-size: 22px;
+    letter-spacing: 1px;
+    margin-top: 6px;
+    color: var(--paper);
+  }
+
+  .city-select.full {
+    width: 100%;
+    margin-top: 14px;
+  }
+
+  .select-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+  }
+
+  .city-select {
+    flex: 1;
+    min-width: 0;
+    background: var(--panel);
+    border: 1px solid var(--steel);
+    color: var(--paper);
+    font-size: 14px;
+    padding: 10px 10px;
+    border-radius: 8px;
+    font-family: inherit;
+  }
+
+  .company-badge {
+    display: inline-block;
+    font-family: 'Courier New', monospace;
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    color: var(--asphalt);
+    background: var(--muted);
+    padding: 3px 8px;
+    border-radius: 4px;
+    margin-top: 6px;
+  }
+
+  .board {
+    background: #0e1011;
+    border-radius: 10px;
+    padding: 4px;
+    margin-top: 4px;
+  }
+
+  .row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 22px 20px;
+    border-bottom: 1px solid #1c1f21;
+  }
+
+  .row:last-child { border-bottom: none; }
+
+  .fuel-label {
+    font-size: 13px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-family: 'Courier New', monospace;
+  }
+
+  .fuel-name {
+    font-size: 19px;
+    font-weight: 600;
+    margin-top: 4px;
+    color: var(--paper);
+  }
+
+  .price {
+    font-family: 'Courier New', monospace;
+    font-size: 34px;
+    font-weight: 700;
+    letter-spacing: 1px;
+  }
+
+  .price.petrol { color: var(--led-green); text-shadow: 0 0 12px rgba(126,231,135,0.35); }
+  .price.diesel { color: var(--led-amber); text-shadow: 0 0 12px rgba(255,179,71,0.35); }
+  .price.gold { color: #ffd66b; text-shadow: 0 0 12px rgba(255,214,107,0.35); }
+  .price.silver { color: #d9dee2; text-shadow: 0 0 12px rgba(217,222,226,0.35); }
+
+  .tabs {
+    display: flex;
+    gap: 6px;
+    margin: 20px 0 0;
+    max-width: 420px;
+    width: 100%;
+  }
+  .tab-btn {
+    flex: 1;
+    background: var(--panel);
+    border: 1px solid var(--steel);
+    color: var(--muted);
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 10px 8px;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+  .tab-btn.active {
+    color: var(--asphalt);
+    background: var(--led-amber);
+    border-color: var(--led-amber);
+    font-weight: 700;
+  }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  .ai-badge {
+    display: inline-block;
+    font-family: 'Courier New', monospace;
+    font-size: 10px;
+    letter-spacing: 1px;
+    color: var(--asphalt);
+    background: var(--led-amber);
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-left: 6px;
+  }
+
+  .unit {
+    font-size: 12px;
+    color: var(--muted);
+    text-align: right;
+    margin-top: 2px;
+  }
+
+  .change {
+    font-size: 12px;
+    margin-top: 4px;
+    text-align: right;
+  }
+  .change.up { color: var(--led-red); }
+  .change.down { color: var(--led-green); }
+  .change.flat { color: var(--muted); }
+
+  footer {
+    text-align: center;
+    padding: 16px 12px 4px;
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  .notice {
+    max-width: 420px;
+    margin-top: 22px;
+    padding: 14px 16px;
+    background: var(--panel);
+    border: 1px solid var(--steel);
+    border-radius: 10px;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--muted);
+  }
+  .notice b { color: var(--paper); }
+</style>
+</head>
+<body>
+
+  <div class="tabs">
+    <button class="tab-btn active" id="tabFuel">Fuel</button>
+    <button class="tab-btn" id="tabMetal">Gold & Silver</button>
+  </div>
+
+  <div class="rig panel active" id="fuelPanel">
+    <div class="frame-top">
+      <header>
+        <div class="eyebrow">Retail Fuel · Live Board</div>
+        <h1>PRICE WATCH</h1>
+        <select class="city-select full" id="countrySelect"></select>
+        <select class="city-select full" id="stateSelect"></select>
+        <div class="select-row">
+          <select class="city-select" id="citySelect"></select>
+          <select class="city-select" id="companySelect"></select>
+        </div>
+        <button class="tab-btn" id="aiFetchBtn" style="width:100%; margin-top:8px;">Ask Claude for Today's Rate (AI-estimated)</button>
+        <div id="aiStatus" style="font-size:11px; color: var(--muted); margin-top:6px; font-family:'Courier New',monospace;"></div>
+      </header>
+
+      <div class="board">
+        <div class="row">
+          <div>
+            <div class="fuel-label">Product</div>
+            <div class="fuel-name" id="petrolLabel">Petrol</div>
+          </div>
+          <div>
+            <div class="price petrol" id="petrolPrice">--.--</div>
+            <div class="unit" id="petrolUnit">&#8377; / litre</div>
+            <div class="change" id="petrolChange"></div>
+          </div>
+        </div>
+        <div class="row">
+          <div>
+            <div class="fuel-label">Product</div>
+            <div class="fuel-name">Diesel</div>
+          </div>
+          <div>
+            <div class="price diesel" id="dieselPrice">--.--</div>
+            <div class="unit" id="dieselUnit">&#8377; / litre</div>
+            <div class="change" id="dieselChange"></div>
+          </div>
+        </div>
+      </div>
+
+      <footer id="lastUpdated">Last updated: --</footer>
+    </div>
+  </div>
+
+  <div class="rig panel" id="metalPanel">
+    <div class="frame-top">
+      <header>
+        <div class="eyebrow">Gold & Silver · Local Rate</div>
+        <h1>PRICE WATCH</h1>
+        <select class="city-select full" id="metalCountrySelect"></select>
+        <select class="city-select full" id="metalStateSelect"></select>
+        <select class="city-select full" id="metalCitySelect"></select>
+      </header>
+
+      <div class="board">
+        <div class="row">
+          <div>
+            <div class="fuel-label">Gold</div>
+            <div class="fuel-name">24K</div>
+          </div>
+          <div>
+            <div class="price gold" id="gold24Price">--.--</div>
+            <div class="unit" id="gold24Unit">&#8377; / gram</div>
+            <div class="change" id="gold24Change"></div>
+          </div>
+        </div>
+        <div class="row">
+          <div>
+            <div class="fuel-label">Gold</div>
+            <div class="fuel-name">22K</div>
+          </div>
+          <div>
+            <div class="price gold" id="gold22Price">--.--</div>
+            <div class="unit" id="gold22Unit">&#8377; / gram</div>
+            <div class="change" id="gold22Change"></div>
+          </div>
+        </div>
+        <div class="row">
+          <div>
+            <div class="fuel-label">Metal</div>
+            <div class="fuel-name">Silver</div>
+          </div>
+          <div>
+            <div class="price silver" id="silverPrice">--.--</div>
+            <div class="unit" id="silverUnit">&#8377; / gram</div>
+            <div class="change" id="silverChange"></div>
+          </div>
+        </div>
+      </div>
+
+      <footer id="metalLastUpdated">Last updated: --</footer>
+    </div>
+  </div>
+
+  <div class="notice">
+    <b>Heads up:</b> India's numbers are the ones we've been refining together — US/UK/UAE are rougher illustrative placeholders (currency-converted, not independently sourced per city) since this is meant to show the structure works, not to be accurate yet. Fuel "companies" differ genuinely by country — the US list (Shell/Chevron/ExxonMobil/BP/Costco) and UAE list (state-regulated brands) aren't just renamed Indian ones.
+  </div>
+
+  <script>
+    // ---- PLACEHOLDER DATA ----
+    // Swap this object for a real API response later.
+    // Nested: country -> states -> city -> company -> prices.
+    // Each country carries its own currency, unit, and fuel-name label,
+    // since these genuinely differ (US = gallons/USD/"Gasoline",
+    // UK = litres/GBP, UAE = litres/AED with government-set pricing).
+    const COUNTRY_DATA = {
+      "India": {
+        currency: "&#8377;", unit: "litre", fuelLabel: "Petrol",
+        states: {
+          "Tamil Nadu": {
+            "Chennai": {
+              "IOCL":   { petrol: 100.86, diesel: 92.47, petrolChange: -0.12, dieselChange: 0.00 },
+              "BPCL":   { petrol: 100.90, diesel: 92.50, petrolChange: -0.10, dieselChange: 0.02 },
+              "HPCL":   { petrol: 100.84, diesel: 92.45, petrolChange: -0.14, dieselChange: -0.02 },
+              "Shell":  { petrol: 104.20, diesel: 95.80, petrolChange: 0.00, dieselChange: 0.00 },
+              "Nayara": { petrol: 101.10, diesel: 92.90, petrolChange: 0.05, dieselChange: 0.10 }
+            },
+            "Coimbatore": {
+              "IOCL":   { petrol: 101.32, diesel: 93.01, petrolChange: 0.00, dieselChange: 0.15 },
+              "BPCL":   { petrol: 101.35, diesel: 93.05, petrolChange: 0.02, dieselChange: 0.12 },
+              "HPCL":   { petrol: 101.28, diesel: 92.98, petrolChange: -0.03, dieselChange: 0.10 },
+              "Shell":  { petrol: 104.60, diesel: 96.10, petrolChange: 0.00, dieselChange: 0.00 },
+              "Nayara": { petrol: 101.55, diesel: 93.40, petrolChange: 0.08, dieselChange: 0.15 }
+            },
+            "Madurai": {
+              "IOCL":   { petrol: 101.20, diesel: 92.90, petrolChange: 0.10, dieselChange: -0.05 },
+              "BPCL":   { petrol: 101.24, diesel: 92.93, petrolChange: 0.10, dieselChange: -0.05 },
+              "HPCL":   { petrol: 101.18, diesel: 92.88, petrolChange: 0.08, dieselChange: -0.06 },
+              "Shell":  { petrol: 104.50, diesel: 96.00, petrolChange: 0.00, dieselChange: 0.00 },
+              "Nayara": { petrol: 101.45, diesel: 93.20, petrolChange: 0.12, dieselChange: -0.02 }
+            }
+          },
+          "Karnataka": {
+            "Bengaluru": {
+              "IOCL":   { petrol: 102.86, diesel: 88.94, petrolChange: 0.00, dieselChange: 0.00 },
+              "BPCL":   { petrol: 102.90, diesel: 88.98, petrolChange: 0.00, dieselChange: 0.00 },
+              "HPCL":   { petrol: 102.82, diesel: 88.90, petrolChange: 0.00, dieselChange: 0.00 },
+              "Shell":  { petrol: 106.10, diesel: 92.30, petrolChange: 0.00, dieselChange: 0.00 },
+              "Nayara": { petrol: 103.10, diesel: 89.30, petrolChange: 0.00, dieselChange: 0.00 }
+            },
+            "Mysuru": {
+              "IOCL":   { petrol: 102.70, diesel: 88.80, petrolChange: 0.05, dieselChange: 0.00 },
+              "BPCL":   { petrol: 102.75, diesel: 88.85, petrolChange: 0.05, dieselChange: 0.00 },
+              "HPCL":   { petrol: 102.68, diesel: 88.78, petrolChange: 0.03, dieselChange: -0.02 },
+              "Shell":  { petrol: 105.95, diesel: 92.15, petrolChange: 0.00, dieselChange: 0.00 },
+              "Nayara": { petrol: 102.95, diesel: 89.15, petrolChange: 0.02, dieselChange: 0.00 }
+            }
+          },
+          "Maharashtra": {
+            "Mumbai": {
+              "IOCL":   { petrol: 103.44, diesel: 90.36, petrolChange: -0.20, dieselChange: -0.10 },
+              "BPCL":   { petrol: 103.48, diesel: 90.40, petrolChange: -0.20, dieselChange: -0.10 },
+              "HPCL":   { petrol: 103.40, diesel: 90.32, petrolChange: -0.22, dieselChange: -0.12 },
+              "Shell":  { petrol: 106.80, diesel: 93.70, petrolChange: 0.00, dieselChange: 0.00 },
+              "Nayara": { petrol: 103.70, diesel: 90.70, petrolChange: -0.15, dieselChange: -0.08 }
+            },
+            "Pune": {
+              "IOCL":   { petrol: 103.10, diesel: 89.90, petrolChange: 0.00, dieselChange: 0.00 },
+              "BPCL":   { petrol: 103.14, diesel: 89.94, petrolChange: 0.00, dieselChange: 0.00 },
+              "HPCL":   { petrol: 103.06, diesel: 89.86, petrolChange: -0.02, dieselChange: 0.00 },
+              "Shell":  { petrol: 106.40, diesel: 93.20, petrolChange: 0.00, dieselChange: 0.00 },
+              "Nayara": { petrol: 103.35, diesel: 90.20, petrolChange: 0.00, dieselChange: 0.00 }
+            }
+          },
+          "Delhi": {
+            "New Delhi": {
+              "IOCL":   { petrol: 94.72, diesel: 87.62, petrolChange: 0.00, dieselChange: 0.00 },
+              "BPCL":   { petrol: 94.76, diesel: 87.66, petrolChange: 0.00, dieselChange: 0.00 },
+              "HPCL":   { petrol: 94.70, diesel: 87.60, petrolChange: 0.00, dieselChange: 0.00 },
+              "Shell":  { petrol: 98.10, diesel: 91.00, petrolChange: 0.00, dieselChange: 0.00 },
+              "Nayara": { petrol: 95.00, diesel: 87.90, petrolChange: 0.00, dieselChange: 0.00 }
+            }
+          },
+          "Telangana": {
+            "Hyderabad": {
+              "IOCL":   { petrol: 107.41, diesel: 95.65, petrolChange: 0.00, dieselChange: 0.00 },
+              "BPCL":   { petrol: 107.45, diesel: 95.69, petrolChange: 0.00, dieselChange: 0.00 },
+              "HPCL":   { petrol: 107.38, diesel: 95.60, petrolChange: 0.00, dieselChange: 0.00 },
+              "Shell":  { petrol: 110.80, diesel: 99.10, petrolChange: 0.00, dieselChange: 0.00 },
+              "Nayara": { petrol: 107.70, diesel: 95.95, petrolChange: 0.00, dieselChange: 0.00 }
+            }
+          }
+        }
+      },
+      "United States": {
+        currency: "$", unit: "gallon", fuelLabel: "Gasoline",
+        states: {
+          "California": {
+            "Los Angeles": {
+              "Shell":      { petrol: 4.65, diesel: 4.95, petrolChange: 0.02, dieselChange: 0.01 },
+              "Chevron":    { petrol: 4.70, diesel: 5.00, petrolChange: 0.02, dieselChange: 0.01 },
+              "ExxonMobil": { petrol: 4.62, diesel: 4.92, petrolChange: 0.01, dieselChange: 0.00 },
+              "BP":         { petrol: 4.60, diesel: 4.90, petrolChange: 0.00, dieselChange: 0.00 },
+              "Costco":     { petrol: 4.35, diesel: 4.70, petrolChange: -0.02, dieselChange: -0.01 }
+            },
+            "San Francisco": {
+              "Shell":      { petrol: 4.85, diesel: 5.10, petrolChange: 0.02, dieselChange: 0.01 },
+              "Chevron":    { petrol: 4.90, diesel: 5.15, petrolChange: 0.02, dieselChange: 0.01 },
+              "ExxonMobil": { petrol: 4.82, diesel: 5.05, petrolChange: 0.01, dieselChange: 0.00 },
+              "BP":         { petrol: 4.80, diesel: 5.05, petrolChange: 0.00, dieselChange: 0.00 },
+              "Costco":     { petrol: 4.55, diesel: 4.85, petrolChange: -0.02, dieselChange: -0.01 }
+            }
+          },
+          "New York": {
+            "New York City": {
+              "Shell":      { petrol: 3.65, diesel: 4.05, petrolChange: 0.01, dieselChange: 0.00 },
+              "Chevron":    { petrol: 3.68, diesel: 4.08, petrolChange: 0.01, dieselChange: 0.00 },
+              "ExxonMobil": { petrol: 3.62, diesel: 4.02, petrolChange: 0.00, dieselChange: 0.00 },
+              "BP":         { petrol: 3.60, diesel: 4.00, petrolChange: 0.00, dieselChange: 0.00 },
+              "Costco":     { petrol: 3.40, diesel: 3.80, petrolChange: -0.01, dieselChange: -0.01 }
+            }
+          }
+        }
+      },
+      "United Kingdom": {
+        currency: "&pound;", unit: "litre", fuelLabel: "Petrol",
+        states: {
+          "England": {
+            "London": {
+              "Shell":       { petrol: 1.46, diesel: 1.53, petrolChange: 0.005, dieselChange: 0.00 },
+              "BP":          { petrol: 1.45, diesel: 1.52, petrolChange: 0.00, dieselChange: 0.00 },
+              "Esso":        { petrol: 1.44, diesel: 1.51, petrolChange: 0.00, dieselChange: -0.005 },
+              "Tesco":       { petrol: 1.41, diesel: 1.48, petrolChange: -0.01, dieselChange: -0.01 },
+              "Sainsbury's": { petrol: 1.42, diesel: 1.49, petrolChange: -0.005, dieselChange: 0.00 }
+            },
+            "Manchester": {
+              "Shell":       { petrol: 1.44, diesel: 1.51, petrolChange: 0.00, dieselChange: 0.00 },
+              "BP":          { petrol: 1.43, diesel: 1.50, petrolChange: 0.00, dieselChange: 0.00 },
+              "Esso":        { petrol: 1.42, diesel: 1.49, petrolChange: 0.00, dieselChange: 0.00 },
+              "Tesco":       { petrol: 1.39, diesel: 1.46, petrolChange: -0.01, dieselChange: -0.005 },
+              "Sainsbury's": { petrol: 1.40, diesel: 1.47, petrolChange: 0.00, dieselChange: 0.00 }
+            }
+          },
+          "Scotland": {
+            "Edinburgh": {
+              "Shell":       { petrol: 1.47, diesel: 1.54, petrolChange: 0.00, dieselChange: 0.00 },
+              "BP":          { petrol: 1.46, diesel: 1.53, petrolChange: 0.00, dieselChange: 0.00 },
+              "Esso":        { petrol: 1.45, diesel: 1.52, petrolChange: 0.00, dieselChange: 0.00 },
+              "Tesco":       { petrol: 1.42, diesel: 1.49, petrolChange: 0.00, dieselChange: 0.00 },
+              "Sainsbury's": { petrol: 1.43, diesel: 1.50, petrolChange: 0.00, dieselChange: 0.00 }
+            }
+          }
+        }
+      },
+      "United Arab Emirates": {
+        currency: "AED ", unit: "litre", fuelLabel: "Petrol (Special 95)",
+        states: {
+          "Dubai": {
+            "Dubai": {
+              "ADNOC": { petrol: 2.81, diesel: 2.92, petrolChange: 0.00, dieselChange: 0.00 },
+              "ENOC":  { petrol: 2.81, diesel: 2.92, petrolChange: 0.00, dieselChange: 0.00 },
+              "EPPCO": { petrol: 2.81, diesel: 2.92, petrolChange: 0.00, dieselChange: 0.00 }
+            }
+          },
+          "Abu Dhabi": {
+            "Abu Dhabi": {
+              "ADNOC": { petrol: 2.79, diesel: 2.90, petrolChange: 0.00, dieselChange: 0.00 },
+              "ENOC":  { petrol: 2.79, diesel: 2.90, petrolChange: 0.00, dieselChange: 0.00 },
+              "EPPCO": { petrol: 2.79, diesel: 2.90, petrolChange: 0.00, dieselChange: 0.00 }
+            }
+          }
+        }
+      }
+    };
+
+    const countrySelect = document.getElementById('countrySelect');
+    const stateSelect = document.getElementById('stateSelect');
+    const citySelect = document.getElementById('citySelect');
+    const companySelect = document.getElementById('companySelect');
+
+    Object.keys(COUNTRY_DATA).forEach(country => {
+      const opt = document.createElement('option');
+      opt.value = country;
+      opt.textContent = country;
+      countrySelect.appendChild(opt);
+    });
+
+    function populateStates(country) {
+      stateSelect.innerHTML = '';
+      Object.keys(COUNTRY_DATA[country].states).forEach(state => {
+        const opt = document.createElement('option');
+        opt.value = state;
+        opt.textContent = state;
+        stateSelect.appendChild(opt);
+      });
+    }
+
+    function populateCities(country, state) {
+      citySelect.innerHTML = '';
+      Object.keys(COUNTRY_DATA[country].states[state]).forEach(city => {
+        const opt = document.createElement('option');
+        opt.value = city;
+        opt.textContent = city;
+        citySelect.appendChild(opt);
+      });
+    }
+
+    function populateCompanies(country, state, city) {
+      companySelect.innerHTML = '';
+      Object.keys(COUNTRY_DATA[country].states[state][city]).forEach(company => {
+        const opt = document.createElement('option');
+        opt.value = company;
+        opt.textContent = company;
+        companySelect.appendChild(opt);
+      });
+    }
+
+    function fmtChange(val, currency) {
+      if (val > 0) return { text: `▲ ${currency}${val.toFixed(3)} vs yesterday`, cls: 'up' };
+      if (val < 0) return { text: `▼ ${currency}${Math.abs(val).toFixed(3)} vs yesterday`, cls: 'down' };
+      return { text: 'No change vs yesterday', cls: 'flat' };
+    }
+
+    function render(country, state, city, company) {
+      const meta = COUNTRY_DATA[country];
+      const data = meta.states[state][city][company];
+      document.getElementById('petrolLabel').textContent = meta.fuelLabel;
+      document.getElementById('petrolPrice').innerHTML = data.petrol.toFixed(2);
+      document.getElementById('dieselPrice').innerHTML = data.diesel.toFixed(2);
+      document.getElementById('petrolUnit').innerHTML = meta.currency + ' / ' + meta.unit;
+      document.getElementById('dieselUnit').innerHTML = meta.currency + ' / ' + meta.unit;
+
+      const pChange = fmtChange(data.petrolChange, meta.currency.replace('&pound;', '£').replace('&#8377;', '₹'));
+      const dChange = fmtChange(data.dieselChange, meta.currency.replace('&pound;', '£').replace('&#8377;', '₹'));
+      const pEl = document.getElementById('petrolChange');
+      const dEl = document.getElementById('dieselChange');
+      pEl.textContent = pChange.text; pEl.className = 'change ' + pChange.cls;
+      dEl.textContent = dChange.text; dEl.className = 'change ' + dChange.cls;
+
+      document.getElementById('lastUpdated').textContent =
+        'Last updated: ' + new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) + ' · manual entry · ' + city + ', ' + state + ', ' + country + ' · ' + company;
+    }
+
+    countrySelect.addEventListener('change', (e) => {
+      const country = e.target.value;
+      populateStates(country);
+      populateCities(country, stateSelect.value);
+      populateCompanies(country, stateSelect.value, citySelect.value);
+      render(country, stateSelect.value, citySelect.value, companySelect.value);
+    });
+    stateSelect.addEventListener('change', () => {
+      populateCities(countrySelect.value, stateSelect.value);
+      populateCompanies(countrySelect.value, stateSelect.value, citySelect.value);
+      render(countrySelect.value, stateSelect.value, citySelect.value, companySelect.value);
+    });
+    citySelect.addEventListener('change', () => {
+      populateCompanies(countrySelect.value, stateSelect.value, citySelect.value);
+      render(countrySelect.value, stateSelect.value, citySelect.value, companySelect.value);
+    });
+    companySelect.addEventListener('change', () => {
+      render(countrySelect.value, stateSelect.value, citySelect.value, companySelect.value);
+    });
+
+    countrySelect.value = 'India';
+    populateStates('India');
+    stateSelect.value = 'Tamil Nadu';
+    populateCities('India', 'Tamil Nadu');
+    citySelect.value = 'Chennai';
+    populateCompanies('India', 'Tamil Nadu', 'Chennai');
+    render('India', 'Tamil Nadu', 'Chennai', companySelect.value);
+
+    // ---- AI-ASSISTED FUEL RATE (Claude API + web search) ----
+    // Only works inside Claude.ai's artifact preview — the API call is
+    // authenticated by that environment. Opening this HTML file standalone
+    // (downloaded, double-clicked) will NOT work; there is no key to use.
+    // Treat results as a best-effort estimate, not verified truth — see
+    // the notice below on why fuel prices are hard to pin down from the web.
+    const aiFetchBtn = document.getElementById('aiFetchBtn');
+    const aiStatus = document.getElementById('aiStatus');
+
+    async function fetchAIFuelRate() {
+      const city = citySelect.value;
+      const state = stateSelect.value;
+      const country = countrySelect.value;
+      const company = companySelect.value;
+      aiStatus.textContent = 'Asking Claude to search for today\'s rate…';
+      aiFetchBtn.disabled = true;
+
+      try {
+        const prompt = `Search the web for today's current retail petrol/gasoline and diesel price in ${city}, ${state}, ${country}, ideally for ${company} specifically or the general city-wide rate if company-specific isn't available. Report the price in ${country}'s local currency and standard unit (litre or gallon, whichever that country uses).
+Respond with ONLY a JSON object, no other text, no markdown fences, in this exact shape:
+{"petrol": <number or null>, "diesel": <number or null>, "source_name": "<short source name>", "source_url": "<url>", "confidence": "high" | "medium" | "low", "note": "<one short sentence, e.g. if sources disagreed>"}
+If you find conflicting prices across sources, pick the most recent/official-looking one, set confidence to "low" or "medium" accordingly, and mention the conflict in "note".`;
+
+        const response = await fetch("https://api.anthropic.com/v1/messages", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            model: "claude-sonnet-4-6",
+            max_tokens: 1000,
+            messages: [{ role: "user", content: prompt }],
+            tools: [{ type: "web_search_20250305", name: "web_search" }]
+          })
+        });
+
+        if (!response.ok) throw new Error('API status ' + response.status);
+        const data = await response.json();
+        const text = data.content.map(b => b.type === 'text' ? b.text : '').join('\n').trim();
+        const clean = text.replace(/```json|```/g, '').trim();
+        const parsed = JSON.parse(clean);
+
+        if (parsed.petrol != null) document.getElementById('petrolPrice').innerHTML = parsed.petrol.toFixed(2) + '<span class="ai-badge">AI</span>';
+        if (parsed.diesel != null) document.getElementById('dieselPrice').innerHTML = parsed.diesel.toFixed(2) + '<span class="ai-badge">AI</span>';
+
+        document.getElementById('lastUpdated').textContent =
+          'AI-estimated (' + parsed.confidence + ' confidence) · source: ' + parsed.source_name + ' · ' + new Date().toLocaleString('en-IN');
+        aiStatus.textContent = parsed.note || 'Done. Verify against an official source before relying on this.';
+      } catch (err) {
+        aiStatus.textContent = 'Could not get an AI rate (' + err.message + '). This feature only works inside the Claude.ai preview, not in a downloaded file.';
+      } finally {
+        aiFetchBtn.disabled = false;
+      }
+    }
+
+    aiFetchBtn.addEventListener('click', fetchAIFuelRate);
+
+    // ---- GOLD & SILVER ----
+    // Nested: country -> states -> city -> { gold24, gold22, silver, changes }.
+    // India's numbers are the ones we refined against real market data.
+    // US/UK/UAE are currency-converted illustrative placeholders only —
+    // gold/silver spot is a global price, so these are roughly consistent
+    // with each other, just not independently verified per country.
+    const COUNTRY_METAL_DATA = {
+      "India": {
+        currency: "&#8377;", symbol: "₹",
+        states: {
+          "Tamil Nadu": {
+            "Chennai":    { gold24: 14088, gold22: 12905, silver: 240.0, gold24Change: 45, gold22Change: 41, silverChange: -1.2 },
+            "Coimbatore": { gold24: 14094, gold22: 12911, silver: 240.5, gold24Change: 40, gold22Change: 37, silverChange: -1.0 },
+            "Madurai":    { gold24: 14090, gold22: 12907, silver: 240.2, gold24Change: 42, gold22Change: 38, silverChange: -1.1 }
+          },
+          "Karnataka": {
+            "Bengaluru": { gold24: 14075, gold22: 12893, silver: 239.6, gold24Change: 38, gold22Change: 35, silverChange: -0.9 },
+            "Mysuru":    { gold24: 14078, gold22: 12896, silver: 239.7, gold24Change: 38, gold22Change: 35, silverChange: -0.9 }
+          },
+          "Maharashtra": {
+            "Mumbai": { gold24: 14105, gold22: 12921, silver: 240.9, gold24Change: 50, gold22Change: 46, silverChange: -1.4 },
+            "Pune":   { gold24: 14099, gold22: 12915, silver: 240.7, gold24Change: 48, gold22Change: 44, silverChange: -1.3 }
+          },
+          "Delhi": {
+            "New Delhi": { gold24: 14065, gold22: 12884, silver: 239.3, gold24Change: 35, gold22Change: 32, silverChange: -0.8 }
+          },
+          "Telangana": {
+            "Hyderabad": { gold24: 14112, gold22: 12928, silver: 241.1, gold24Change: 52, gold22Change: 48, silverChange: -1.5 }
+          }
+        }
+      },
+      "United States": {
+        currency: "$", symbol: "$",
+        states: {
+          "California": {
+            "Los Angeles":   { gold24: 152.20, gold22: 139.50, silver: 2.55, gold24Change: 0.45, gold22Change: 0.41, silverChange: -0.02 },
+            "San Francisco": { gold24: 152.40, gold22: 139.70, silver: 2.56, gold24Change: 0.45, gold22Change: 0.41, silverChange: -0.02 }
+          },
+          "New York": {
+            "New York City": { gold24: 152.00, gold22: 139.30, silver: 2.54, gold24Change: 0.44, gold22Change: 0.40, silverChange: -0.02 }
+          }
+        }
+      },
+      "United Kingdom": {
+        currency: "&pound;", symbol: "£",
+        states: {
+          "England": {
+            "London":     { gold24: 120.10, gold22: 110.10, silver: 2.02, gold24Change: 0.35, gold22Change: 0.32, silverChange: -0.015 },
+            "Manchester": { gold24: 120.00, gold22: 110.00, silver: 2.01, gold24Change: 0.35, gold22Change: 0.32, silverChange: -0.015 }
+          },
+          "Scotland": {
+            "Edinburgh": { gold24: 120.20, gold22: 110.20, silver: 2.02, gold24Change: 0.35, gold22Change: 0.32, silverChange: -0.015 }
+          }
+        }
+      },
+      "United Arab Emirates": {
+        currency: "AED ", symbol: "AED ",
+        states: {
+          "Dubai": {
+            "Dubai": { gold24: 558.50, gold22: 511.90, silver: 9.35, gold24Change: 1.60, gold22Change: 1.47, silverChange: -0.07 }
+          },
+          "Abu Dhabi": {
+            "Abu Dhabi": { gold24: 558.20, gold22: 511.60, silver: 9.34, gold24Change: 1.60, gold22Change: 1.47, silverChange: -0.07 }
+          }
+        }
+      }
+    };
+
+    const metalCountrySelect = document.getElementById('metalCountrySelect');
+    const metalStateSelect = document.getElementById('metalStateSelect');
+    const metalCitySelect = document.getElementById('metalCitySelect');
+
+    Object.keys(COUNTRY_METAL_DATA).forEach(country => {
+      const opt = document.createElement('option');
+      opt.value = country;
+      opt.textContent = country;
+      metalCountrySelect.appendChild(opt);
+    });
+
+    function populateMetalStates(country) {
+      metalStateSelect.innerHTML = '';
+      Object.keys(COUNTRY_METAL_DATA[country].states).forEach(state => {
+        const opt = document.createElement('option');
+        opt.value = state;
+        opt.textContent = state;
+        metalStateSelect.appendChild(opt);
+      });
+    }
+
+    function populateMetalCities(country, state) {
+      metalCitySelect.innerHTML = '';
+      Object.keys(COUNTRY_METAL_DATA[country].states[state]).forEach(city => {
+        const opt = document.createElement('option');
+        opt.value = city;
+        opt.textContent = city;
+        metalCitySelect.appendChild(opt);
+      });
+    }
+
+    function fmtMetalChange(val, symbol) {
+      if (val > 0) return { text: `▲ ${symbol}${val.toFixed(2)} vs yesterday`, cls: 'up' };
+      if (val < 0) return { text: `▼ ${symbol}${Math.abs(val).toFixed(2)} vs yesterday`, cls: 'down' };
+      return { text: 'No change vs yesterday', cls: 'flat' };
+    }
+
+    function renderMetal(country, state, city) {
+      const meta = COUNTRY_METAL_DATA[country];
+      const data = meta.states[state][city];
+      document.getElementById('gold24Price').textContent = data.gold24.toLocaleString('en-IN');
+      document.getElementById('gold22Price').textContent = data.gold22.toLocaleString('en-IN');
+      document.getElementById('silverPrice').textContent = data.silver.toFixed(2);
+      document.getElementById('gold24Unit').innerHTML = meta.currency + ' / gram';
+      document.getElementById('gold22Unit').innerHTML = meta.currency + ' / gram';
+      document.getElementById('silverUnit').innerHTML = meta.currency + ' / gram';
+
+      const g24 = fmtMetalChange(data.gold24Change, meta.symbol);
+      const g22 = fmtMetalChange(data.gold22Change, meta.symbol);
+      const sil = fmtMetalChange(data.silverChange, meta.symbol);
+
+      const g24El = document.getElementById('gold24Change');
+      const g22El = document.getElementById('gold22Change');
+      const silEl = document.getElementById('silverChange');
+      g24El.textContent = g24.text; g24El.className = 'change ' + g24.cls;
+      g22El.textContent = g22.text; g22El.className = 'change ' + g22.cls;
+      silEl.textContent = sil.text; silEl.className = 'change ' + sil.cls;
+
+      document.getElementById('metalLastUpdated').textContent =
+        'Last updated: ' + new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) + ' · manual entry · ' + city + ', ' + state + ', ' + country;
+    }
+
+    metalCountrySelect.addEventListener('change', (e) => {
+      const country = e.target.value;
+      populateMetalStates(country);
+      populateMetalCities(country, metalStateSelect.value);
+      renderMetal(country, metalStateSelect.value, metalCitySelect.value);
+    });
+    metalStateSelect.addEventListener('change', () => {
+      populateMetalCities(metalCountrySelect.value, metalStateSelect.value);
+      renderMetal(metalCountrySelect.value, metalStateSelect.value, metalCitySelect.value);
+    });
+    metalCitySelect.addEventListener('change', () => {
+      renderMetal(metalCountrySelect.value, metalStateSelect.value, metalCitySelect.value);
+    });
+
+    metalCountrySelect.value = 'India';
+    populateMetalStates('India');
+    metalStateSelect.value = 'Tamil Nadu';
+    populateMetalCities('India', 'Tamil Nadu');
+    metalCitySelect.value = 'Chennai';
+    renderMetal('India', 'Tamil Nadu', 'Chennai');
+
+    // ---- TAB SWITCHING ----
+    const tabFuel = document.getElementById('tabFuel');
+    const tabMetal = document.getElementById('tabMetal');
+    const fuelPanel = document.getElementById('fuelPanel');
+    const metalPanel = document.getElementById('metalPanel');
+
+    tabFuel.addEventListener('click', () => {
+      tabFuel.classList.add('active'); tabMetal.classList.remove('active');
+      fuelPanel.classList.add('active'); metalPanel.classList.remove('active');
+    });
+    tabMetal.addEventListener('click', () => {
+      tabMetal.classList.add('active'); tabFuel.classList.remove('active');
+      metalPanel.classList.add('active'); fuelPanel.classList.remove('active');
+    });
+  </script>
+
+</body>
+</html>
