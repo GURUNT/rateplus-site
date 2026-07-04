@@ -144,21 +144,23 @@
 
   .tabs {
     display: flex;
+    flex-wrap: wrap;
     gap: 6px;
     margin: 20px 0 0;
     max-width: 420px;
     width: 100%;
   }
   .tab-btn {
-    flex: 1;
+    flex: 1 1 calc(50% - 6px);
+    min-width: 90px;
     background: var(--panel);
     border: 1px solid var(--steel);
     color: var(--muted);
     font-family: 'Courier New', monospace;
-    font-size: 12px;
-    letter-spacing: 1.5px;
+    font-size: 11px;
+    letter-spacing: 1px;
     text-transform: uppercase;
-    padding: 10px 8px;
+    padding: 10px 6px;
     border-radius: 8px;
     cursor: pointer;
   }
@@ -226,7 +228,8 @@
 
   <div class="tabs">
     <button class="tab-btn active" id="tabFuel">Fuel</button>
-    <button class="tab-btn" id="tabMetal">Gold & Silver</button>
+    <button class="tab-btn" id="tabMetal">Metals</button>
+    <button class="tab-btn" id="tabAgri">Agri</button>
   </div>
 
   <div class="rig panel active" id="fuelPanel">
@@ -267,16 +270,52 @@
             <div class="change" id="dieselChange"></div>
           </div>
         </div>
+        <div class="row" id="lpgDomesticRow" style="display:none;">
+          <div>
+            <div class="fuel-label">Cylinder</div>
+            <div class="fuel-name">LPG Domestic (14.2kg)</div>
+          </div>
+          <div>
+            <div class="price diesel" id="lpgDomesticPrice">--.--</div>
+            <div class="unit">&#8377; / cylinder</div>
+            <div class="change" id="lpgDomesticChange"></div>
+          </div>
+        </div>
+        <div class="row" id="lpgCommercialRow" style="display:none;">
+          <div>
+            <div class="fuel-label">Cylinder</div>
+            <div class="fuel-name">LPG Commercial (19kg)</div>
+          </div>
+          <div>
+            <div class="price diesel" id="lpgCommercialPrice">--.--</div>
+            <div class="unit">&#8377; / cylinder</div>
+            <div class="change" id="lpgCommercialChange"></div>
+          </div>
+        </div>
+        <div class="row" id="cngRow" style="display:none;">
+          <div>
+            <div class="fuel-label">Vehicle Fuel</div>
+            <div class="fuel-name">CNG</div>
+          </div>
+          <div>
+            <div class="price petrol" id="cngPrice">--.--</div>
+            <div class="unit">&#8377; / kg</div>
+            <div class="change" id="cngChange"></div>
+          </div>
+        </div>
       </div>
 
       <footer id="lastUpdated">Last updated: --</footer>
+      <div class="notice" id="lpgScopeNotice" style="display:none; margin-top:10px;">
+        LPG and CNG shown for India only. Shell and Nayara don't distribute either here — select IOCL, BPCL, or HPCL to see pricing. Note: CNG in India is mostly sold by dedicated City Gas Distribution companies (IGL in Delhi, MGL in Mumbai, Adani Total Gas, etc.), not modeled here — treat these numbers as a rough stand-in, not a real map of who actually sells CNG in each city.
+      </div>
     </div>
   </div>
 
   <div class="rig panel" id="metalPanel">
     <div class="frame-top">
       <header>
-        <div class="eyebrow">Gold & Silver · Local Rate</div>
+        <div class="eyebrow">Metals · Local Rate</div>
         <h1>PRICE WATCH</h1>
         <select class="city-select full" id="metalCountrySelect"></select>
         <select class="city-select full" id="metalStateSelect"></select>
@@ -317,17 +356,238 @@
             <div class="change" id="silverChange"></div>
           </div>
         </div>
+        <div class="row" id="copperRow" style="display:none;">
+          <div>
+            <div class="fuel-label">Industrial</div>
+            <div class="fuel-name">Copper</div>
+          </div>
+          <div>
+            <div class="price silver" id="copperPrice">--.--</div>
+            <div class="unit">&#8377; / kg</div>
+            <div class="change" id="copperChange"></div>
+          </div>
+        </div>
+        <div class="row" id="aluminiumRow" style="display:none;">
+          <div>
+            <div class="fuel-label">Industrial</div>
+            <div class="fuel-name">Aluminium</div>
+          </div>
+          <div>
+            <div class="price silver" id="aluminiumPrice">--.--</div>
+            <div class="unit">&#8377; / kg</div>
+            <div class="change" id="aluminiumChange"></div>
+          </div>
+        </div>
+        <div class="row" id="platinumRow" style="display:none;">
+          <div>
+            <div class="fuel-label">Precious</div>
+            <div class="fuel-name">Platinum</div>
+          </div>
+          <div>
+            <div class="price gold" id="platinumPrice">--.--</div>
+            <div class="unit">&#8377; / gram</div>
+            <div class="change" id="platinumChange"></div>
+          </div>
+        </div>
       </div>
 
       <footer id="metalLastUpdated">Last updated: --</footer>
+      <div class="notice" id="metalScopeNotice" style="display:none; margin-top:10px;">
+        Copper, aluminium, and platinum are shown for India only right now — no reference data pulled for US/UK/UAE yet.
+      </div>
     </div>
   </div>
+
+  <div class="rig panel" id="agriPanel">
+    <div class="frame-top">
+      <header>
+        <div class="eyebrow">Agricultural · Mandi Rate · India Only</div>
+        <h1>PRICE WATCH</h1>
+        <select class="city-select full" id="agriStateSelect"></select>
+        <select class="city-select full" id="agriCitySelect"></select>
+      </header>
+
+      <div class="board">
+        <div class="row">
+          <div>
+            <div class="fuel-label">Grain</div>
+            <div class="fuel-name">Rice</div>
+          </div>
+          <div>
+            <div class="price petrol" id="ricePrice">--.--</div>
+            <div class="unit">&#8377; / quintal</div>
+            <div class="change" id="riceChange"></div>
+          </div>
+        </div>
+        <div class="row">
+          <div>
+            <div class="fuel-label">Grain</div>
+            <div class="fuel-name">Wheat</div>
+          </div>
+          <div>
+            <div class="price petrol" id="wheatPrice">--.--</div>
+            <div class="unit">&#8377; / quintal</div>
+            <div class="change" id="wheatChange"></div>
+          </div>
+        </div>
+        <div class="row">
+          <div>
+            <div class="fuel-label">Sweetener</div>
+            <div class="fuel-name">Sugar</div>
+          </div>
+          <div>
+            <div class="price diesel" id="sugarPrice">--.--</div>
+            <div class="unit">&#8377; / quintal</div>
+            <div class="change" id="sugarChange"></div>
+          </div>
+        </div>
+        <div class="row">
+          <div>
+            <div class="fuel-label">Vegetable</div>
+            <div class="fuel-name">Onion</div>
+          </div>
+          <div>
+            <div class="price diesel" id="onionPrice">--.--</div>
+            <div class="unit">&#8377; / quintal</div>
+            <div class="change" id="onionChange"></div>
+          </div>
+        </div>
+      </div>
+
+      <footer id="agriLastUpdated">Last updated: --</footer>
+    </div>
+  </div>
+  <div class="notice">Mandi (market) prices for the same crop can swing sharply day to day, especially onion — treat these as illustrative, not a trading reference.</div>
 
   <div class="notice">
     <b>Heads up:</b> India's numbers are the ones we've been refining together — US/UK/UAE are rougher illustrative placeholders (currency-converted, not independently sourced per city) since this is meant to show the structure works, not to be accurate yet. Fuel "companies" differ genuinely by country — the US list (Shell/Chevron/ExxonMobil/BP/Costco) and UAE list (state-regulated brands) aren't just renamed Indian ones.
   </div>
 
   <script>
+    // ---- LPG, company-wise (India only, folded into the Fuel tab) ----
+    // Domestic (14.2kg) and Commercial (19kg) cylinders genuinely differ
+    // by company (Indane/IOCL, Bharatgas/BPCL, HP Gas/HPCL) and from each
+    // other — commercial is market-linked, not subsidized, so gaps between
+    // companies are real, not just noise. Shell and Nayara don't sell LPG
+    // cylinders in India, so they're absent here on purpose.
+    const LPG_COMPANY_DATA = {
+      "Tamil Nadu": {
+        "Chennai":    { IOCL: { domestic: 803.50, domesticChange: 0, commercial: 1798.00, commercialChange: 5.00 }, BPCL: { domestic: 805.00, domesticChange: 0, commercial: 1805.50, commercialChange: 5.00 }, HPCL: { domestic: 804.00, domesticChange: 0, commercial: 1801.00, commercialChange: 0 } },
+        "Coimbatore": { IOCL: { domestic: 806.00, domesticChange: 0, commercial: 1802.00, commercialChange: 0 }, BPCL: { domestic: 807.50, domesticChange: 0, commercial: 1809.00, commercialChange: 0 }, HPCL: { domestic: 806.50, domesticChange: 0, commercial: 1804.50, commercialChange: 0 } },
+        "Madurai":    { IOCL: { domestic: 805.00, domesticChange: 0.50 }, BPCL: { domestic: 806.50, domesticChange: 0.50, commercial: 1807.00, commercialChange: 0 }, HPCL: { domestic: 805.50, domesticChange: 0.50, commercial: 1803.00, commercialChange: 0 } }
+      },
+      "Karnataka": {
+        "Bengaluru": { IOCL: { domestic: 810.00, domesticChange: 0, commercial: 1815.00, commercialChange: 0 }, BPCL: { domestic: 811.50, domesticChange: 0, commercial: 1821.00, commercialChange: 0 }, HPCL: { domestic: 810.50, domesticChange: 0, commercial: 1817.00, commercialChange: 0 } },
+        "Mysuru":    { IOCL: { domestic: 811.50, domesticChange: 0, commercial: 1818.00, commercialChange: 0 }, BPCL: { domestic: 813.00, domesticChange: 0, commercial: 1824.00, commercialChange: 0 }, HPCL: { domestic: 812.00, domesticChange: 0, commercial: 1820.00, commercialChange: 0 } }
+      },
+      "Maharashtra": {
+        "Mumbai": { IOCL: { domestic: 802.50, domesticChange: -0.50, commercial: 1789.00, commercialChange: -3.00 }, BPCL: { domestic: 804.00, domesticChange: -0.50, commercial: 1795.50, commercialChange: -3.00 }, HPCL: { domestic: 803.00, domesticChange: -0.50, commercial: 1791.00, commercialChange: -3.00 } },
+        "Pune":   { IOCL: { domestic: 804.00, domesticChange: 0, commercial: 1793.00, commercialChange: 0 }, BPCL: { domestic: 805.50, domesticChange: 0, commercial: 1799.50, commercialChange: 0 }, HPCL: { domestic: 804.50, domesticChange: 0, commercial: 1795.00, commercialChange: 0 } }
+      },
+      "Delhi": {
+        "New Delhi": { IOCL: { domestic: 803.00, domesticChange: 0, commercial: 1780.00, commercialChange: 0 }, BPCL: { domestic: 804.50, domesticChange: 0, commercial: 1786.50, commercialChange: 0 }, HPCL: { domestic: 803.50, domesticChange: 0, commercial: 1782.00, commercialChange: 0 } }
+      },
+      "Telangana": {
+        "Hyderabad": { IOCL: { domestic: 857.50, domesticChange: 0, commercial: 1822.00, commercialChange: 0 }, BPCL: { domestic: 859.00, domesticChange: 0, commercial: 1828.50, commercialChange: 0 }, HPCL: { domestic: 858.00, domesticChange: 0, commercial: 1824.00, commercialChange: 0 } }
+      }
+    };
+
+    function renderLpg(country, state, city, company) {
+      const domRow = document.getElementById('lpgDomesticRow');
+      const comRow = document.getElementById('lpgCommercialRow');
+      const scopeNotice = document.getElementById('lpgScopeNotice');
+
+      if (country !== 'India') {
+        domRow.style.display = 'none';
+        comRow.style.display = 'none';
+        scopeNotice.style.display = 'none';
+        renderCng(country, state, city, company);
+        return;
+      }
+
+      scopeNotice.style.display = 'block';
+      const cityData = LPG_COMPANY_DATA[state] && LPG_COMPANY_DATA[state][city];
+      const lpg = cityData && cityData[company];
+
+      if (!lpg) {
+        // Shell / Nayara don't sell LPG — show the rows but with a clear N/A
+        domRow.style.display = 'flex';
+        comRow.style.display = 'flex';
+        document.getElementById('lpgDomesticPrice').textContent = 'N/A';
+        document.getElementById('lpgCommercialPrice').textContent = 'N/A';
+        document.getElementById('lpgDomesticChange').textContent = 'Not an LPG distributor';
+        document.getElementById('lpgDomesticChange').className = 'change flat';
+        document.getElementById('lpgCommercialChange').textContent = 'Not an LPG distributor';
+        document.getElementById('lpgCommercialChange').className = 'change flat';
+        renderCng(country, state, city, company);
+        return;
+      }
+
+      domRow.style.display = 'flex';
+      comRow.style.display = 'flex';
+      document.getElementById('lpgDomesticPrice').textContent = lpg.domestic.toFixed(2);
+      document.getElementById('lpgCommercialPrice').textContent = (lpg.commercial || 0).toFixed(2);
+
+      const domCh = fmtChange(lpg.domesticChange || 0, '₹');
+      const comCh = fmtChange(lpg.commercialChange || 0, '₹');
+      const domEl = document.getElementById('lpgDomesticChange');
+      const comEl = document.getElementById('lpgCommercialChange');
+      domEl.textContent = domCh.text; domEl.className = 'change ' + domCh.cls;
+      comEl.textContent = comCh.text; comEl.className = 'change ' + comCh.cls;
+
+      renderCng(country, state, city, company);
+    }
+
+    // ---- CNG, company-wise (India only) ----
+    // Priced per kg. Same IOCL/BPCL/HPCL company set as LPG for consistency
+    // with the existing selector — see the scope notice in the markup for
+    // why this is a simplification, not an accurate map of India's CNG market.
+    const CNG_DATA = {
+      "Tamil Nadu": {
+        "Chennai":    { IOCL: { price: 86.50, change: 0 },   BPCL: { price: 87.00, change: 0 },   HPCL: { price: 86.75, change: 0 } },
+        "Coimbatore": { IOCL: { price: 87.50, change: 0.50 }, BPCL: { price: 88.00, change: 0.50 }, HPCL: { price: 87.75, change: 0.50 } },
+        "Madurai":    { IOCL: { price: 87.00, change: 0 },   BPCL: { price: 87.50, change: 0 },   HPCL: { price: 87.25, change: 0 } }
+      },
+      "Karnataka": {
+        "Bengaluru": { IOCL: { price: 89.00, change: 0 }, BPCL: { price: 89.50, change: 0 }, HPCL: { price: 89.25, change: 0 } },
+        "Mysuru":    { IOCL: { price: 89.50, change: 0 }, BPCL: { price: 90.00, change: 0 }, HPCL: { price: 89.75, change: 0 } }
+      },
+      "Maharashtra": {
+        "Mumbai": { IOCL: { price: 82.00, change: -0.50 }, BPCL: { price: 82.50, change: -0.50 }, HPCL: { price: 82.25, change: -0.50 } },
+        "Pune":   { IOCL: { price: 83.50, change: 0 },     BPCL: { price: 84.00, change: 0 },     HPCL: { price: 83.75, change: 0 } }
+      },
+      "Delhi": {
+        "New Delhi": { IOCL: { price: 75.50, change: 0 }, BPCL: { price: 76.00, change: 0 }, HPCL: { price: 75.75, change: 0 } }
+      },
+      "Telangana": {
+        "Hyderabad": { IOCL: { price: 91.00, change: 0 }, BPCL: { price: 91.50, change: 0 }, HPCL: { price: 91.25, change: 0 } }
+      }
+    };
+
+    function renderCng(country, state, city, company) {
+      const row = document.getElementById('cngRow');
+      if (country !== 'India') {
+        row.style.display = 'none';
+        return;
+      }
+      row.style.display = 'flex';
+
+      const cityData = CNG_DATA[state] && CNG_DATA[state][city];
+      const cng = cityData && cityData[company];
+
+      if (!cng) {
+        document.getElementById('cngPrice').textContent = 'N/A';
+        const chEl = document.getElementById('cngChange');
+        chEl.textContent = 'Not a CNG distributor'; chEl.className = 'change flat';
+        return;
+      }
+
+      document.getElementById('cngPrice').textContent = cng.price.toFixed(2);
+      const ch = fmtChange(cng.change, '₹');
+      const chEl = document.getElementById('cngChange');
+      chEl.textContent = ch.text; chEl.className = 'change ' + ch.cls;
+    }
+
     // ---- PLACEHOLDER DATA ----
     // Swap this object for a real API response later.
     // Nested: country -> states -> city -> company -> prices.
@@ -560,6 +820,8 @@
 
       document.getElementById('lastUpdated').textContent =
         'Last updated: ' + new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) + ' · manual entry · ' + city + ', ' + state + ', ' + country + ' · ' + company;
+
+      renderLpg(country, state, city, company);
     }
 
     countrySelect.addEventListener('change', (e) => {
@@ -750,6 +1012,21 @@ If you find conflicting prices across sources, pick the most recent/official-loo
       return { text: 'No change vs yesterday', cls: 'flat' };
     }
 
+    // India-only industrial/precious metal add-ons (copper, aluminium, platinum).
+    // Prices per kg for copper/aluminium, per gram for platinum — placeholder,
+    // illustrative only, not sourced per city like the fuel data was.
+    const EXTRA_METALS_INDIA = {
+      "Chennai":    { copper: 855, copperChange: 3.2, aluminium: 222, aluminiumChange: -0.8, platinum: 3020, platinumChange: 12 },
+      "Coimbatore": { copper: 857, copperChange: 3.0, aluminium: 223, aluminiumChange: -0.6, platinum: 3025, platinumChange: 11 },
+      "Madurai":    { copper: 856, copperChange: 3.1, aluminium: 222, aluminiumChange: -0.7, platinum: 3022, platinumChange: 11 },
+      "Bengaluru":  { copper: 852, copperChange: 2.8, aluminium: 220, aluminiumChange: -0.5, platinum: 3010, platinumChange: 10 },
+      "Mysuru":     { copper: 853, copperChange: 2.8, aluminium: 220, aluminiumChange: -0.5, platinum: 3012, platinumChange: 10 },
+      "Mumbai":     { copper: 860, copperChange: 3.5, aluminium: 225, aluminiumChange: -0.9, platinum: 3035, platinumChange: 13 },
+      "Pune":       { copper: 858, copperChange: 3.3, aluminium: 224, aluminiumChange: -0.8, platinum: 3030, platinumChange: 12 },
+      "New Delhi":  { copper: 848, copperChange: 2.5, aluminium: 218, aluminiumChange: -0.4, platinum: 3000, platinumChange: 9 },
+      "Hyderabad":  { copper: 861, copperChange: 3.6, aluminium: 226, aluminiumChange: -1.0, platinum: 3040, platinumChange: 14 }
+    };
+
     function renderMetal(country, state, city) {
       const meta = COUNTRY_METAL_DATA[country];
       const data = meta.states[state][city];
@@ -770,6 +1047,38 @@ If you find conflicting prices across sources, pick the most recent/official-loo
       g24El.textContent = g24.text; g24El.className = 'change ' + g24.cls;
       g22El.textContent = g22.text; g22El.className = 'change ' + g22.cls;
       silEl.textContent = sil.text; silEl.className = 'change ' + sil.cls;
+
+      const copperRow = document.getElementById('copperRow');
+      const aluminiumRow = document.getElementById('aluminiumRow');
+      const platinumRow = document.getElementById('platinumRow');
+      const scopeNotice = document.getElementById('metalScopeNotice');
+
+      if (country === 'India' && EXTRA_METALS_INDIA[city]) {
+        const extra = EXTRA_METALS_INDIA[city];
+        copperRow.style.display = 'flex';
+        aluminiumRow.style.display = 'flex';
+        platinumRow.style.display = 'flex';
+        scopeNotice.style.display = 'block';
+
+        document.getElementById('copperPrice').textContent = extra.copper.toLocaleString('en-IN');
+        document.getElementById('aluminiumPrice').textContent = extra.aluminium.toLocaleString('en-IN');
+        document.getElementById('platinumPrice').textContent = extra.platinum.toLocaleString('en-IN');
+
+        const cu = fmtMetalChange(extra.copperChange, '₹');
+        const al = fmtMetalChange(extra.aluminiumChange, '₹');
+        const pt = fmtMetalChange(extra.platinumChange, '₹');
+        const cuEl = document.getElementById('copperChange');
+        const alEl = document.getElementById('aluminiumChange');
+        const ptEl = document.getElementById('platinumChange');
+        cuEl.textContent = cu.text; cuEl.className = 'change ' + cu.cls;
+        alEl.textContent = al.text; alEl.className = 'change ' + al.cls;
+        ptEl.textContent = pt.text; ptEl.className = 'change ' + pt.cls;
+      } else {
+        copperRow.style.display = 'none';
+        aluminiumRow.style.display = 'none';
+        platinumRow.style.display = 'none';
+        scopeNotice.style.display = 'none';
+      }
 
       document.getElementById('metalLastUpdated').textContent =
         'Last updated: ' + new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) + ' · manual entry · ' + city + ', ' + state + ', ' + country;
@@ -796,20 +1105,97 @@ If you find conflicting prices across sources, pick the most recent/official-loo
     metalCitySelect.value = 'Chennai';
     renderMetal('India', 'Tamil Nadu', 'Chennai');
 
+
+    // ---- AGRICULTURAL (India only) ----
+    // Priced per quintal (100kg) at a local mandi/market — no "company"
+    // concept here. Onion swings hardest day to day in reality; the
+    // placeholder change values below reflect that on purpose.
+    const AGRI_DATA = {
+      "Tamil Nadu": {
+        "Chennai": { rice: 2150, riceChange: 5, wheat: 2380, wheatChange: -10, sugar: 3850, sugarChange: 0, onion: 1800, onionChange: 120 },
+        "Coimbatore": { rice: 2140, riceChange: 0, wheat: 2370, wheatChange: 0, sugar: 3840, sugarChange: 0, onion: 1750, onionChange: -80 },
+        "Madurai": { rice: 2160, riceChange: 10, wheat: 2390, wheatChange: 0, sugar: 3860, sugarChange: 10, onion: 1820, onionChange: 200 }
+      },
+      "Karnataka": {
+        "Bengaluru": { rice: 2200, riceChange: 0, wheat: 2400, wheatChange: 5, sugar: 3870, sugarChange: 0, onion: 1650, onionChange: -150 },
+        "Mysuru": { rice: 2190, riceChange: 0, wheat: 2395, wheatChange: 0, sugar: 3865, sugarChange: 0, onion: 1600, onionChange: -100 }
+      },
+      "Maharashtra": {
+        "Mumbai": { rice: 2250, riceChange: 15, wheat: 2420, wheatChange: 0, sugar: 3900, sugarChange: 20, onion: 1500, onionChange: -300 },
+        "Pune": { rice: 2230, riceChange: 0, wheat: 2410, wheatChange: 0, sugar: 3890, sugarChange: 0, onion: 1480, onionChange: -250 }
+      },
+      "Delhi": {
+        "New Delhi": { rice: 2280, riceChange: 0, wheat: 2350, wheatChange: -5, sugar: 3820, sugarChange: 0, onion: 1900, onionChange: 250 }
+      },
+      "Telangana": {
+        "Hyderabad": { rice: 2170, riceChange: 0, wheat: 2405, wheatChange: 0, sugar: 3855, sugarChange: 0, onion: 1700, onionChange: 90 }
+      }
+    };
+
+    const agriStateSelect = document.getElementById('agriStateSelect');
+    const agriCitySelect = document.getElementById('agriCitySelect');
+
+    Object.keys(AGRI_DATA).forEach(state => {
+      const opt = document.createElement('option');
+      opt.value = state; opt.textContent = state;
+      agriStateSelect.appendChild(opt);
+    });
+
+    function populateAgriCities(state) {
+      agriCitySelect.innerHTML = '';
+      Object.keys(AGRI_DATA[state]).forEach(city => {
+        const opt = document.createElement('option');
+        opt.value = city; opt.textContent = city;
+        agriCitySelect.appendChild(opt);
+      });
+    }
+
+    function renderAgri(state, city) {
+      const data = AGRI_DATA[state][city];
+      ['rice', 'wheat', 'sugar', 'onion'].forEach(crop => {
+        document.getElementById(crop + 'Price').textContent = data[crop].toLocaleString('en-IN');
+        const ch = fmtChange(data[crop + 'Change'], '₹');
+        const chEl = document.getElementById(crop + 'Change');
+        chEl.textContent = ch.text; chEl.className = 'change ' + ch.cls;
+      });
+      document.getElementById('agriLastUpdated').textContent =
+        'Last updated: ' + new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) + ' · manual entry · ' + city + ', ' + state + ' mandi';
+    }
+
+    agriStateSelect.addEventListener('change', (e) => {
+      populateAgriCities(e.target.value);
+      renderAgri(e.target.value, agriCitySelect.value);
+    });
+    agriCitySelect.addEventListener('change', () => {
+      renderAgri(agriStateSelect.value, agriCitySelect.value);
+    });
+
+    agriStateSelect.value = 'Tamil Nadu';
+    populateAgriCities('Tamil Nadu');
+    agriCitySelect.value = 'Chennai';
+    renderAgri('Tamil Nadu', 'Chennai');
+
     // ---- TAB SWITCHING ----
     const tabFuel = document.getElementById('tabFuel');
     const tabMetal = document.getElementById('tabMetal');
+    const tabAgri = document.getElementById('tabAgri');
     const fuelPanel = document.getElementById('fuelPanel');
     const metalPanel = document.getElementById('metalPanel');
+    const agriPanel = document.getElementById('agriPanel');
 
-    tabFuel.addEventListener('click', () => {
-      tabFuel.classList.add('active'); tabMetal.classList.remove('active');
-      fuelPanel.classList.add('active'); metalPanel.classList.remove('active');
-    });
-    tabMetal.addEventListener('click', () => {
-      tabMetal.classList.add('active'); tabFuel.classList.remove('active');
-      metalPanel.classList.add('active'); fuelPanel.classList.remove('active');
-    });
+    const allTabs = [tabFuel, tabMetal, tabAgri];
+    const allPanels = [fuelPanel, metalPanel, agriPanel];
+
+    function activateTab(tab, panel) {
+      allTabs.forEach(t => t.classList.remove('active'));
+      allPanels.forEach(p => p.classList.remove('active'));
+      tab.classList.add('active');
+      panel.classList.add('active');
+    }
+
+    tabFuel.addEventListener('click', () => activateTab(tabFuel, fuelPanel));
+    tabMetal.addEventListener('click', () => activateTab(tabMetal, metalPanel));
+    tabAgri.addEventListener('click', () => activateTab(tabAgri, agriPanel));
   </script>
 
 </body>
